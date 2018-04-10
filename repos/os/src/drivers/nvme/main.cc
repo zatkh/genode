@@ -1405,7 +1405,6 @@ class Driver : public Block::Driver
 				pd.succeeded(succeeded);
 
 				Io_buffer *iob = r->iob;
-				if (!iob) { Genode::warning("no I/O buffer found for request"); }
 
 				if (succeeded && pd.operation() == Packet_descriptor::READ) {
 					size_t const len = pd.block_count() * _block_size;

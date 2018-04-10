@@ -1,4 +1,9 @@
-set use_vfio 0
+# perform write tests when requested
+if {[info exists env(GENODE_TEST_WRITE)]} {
+set test_write 1
+} else {
+set test_write 0
+}
 
 assert_spec x86
 
@@ -31,7 +36,7 @@ build $build_components
 
 
 #
-# Build EXT2-file-system image
+# Create raw image
 #
 catch { exec $dd if=/dev/zero of=bin/nvme.raw bs=1M count=0 seek=32768 }
 
@@ -91,14 +96,12 @@ append_if [expr !$is_qemu] config {
 				<sequential length="1G" size="8K"   synchronous="no"/>
 				<sequential length="1G" size="64K"  synchronous="yes"/>
 				<sequential length="16G" size="1M"  synchronous="no"/>
-<!--
-				<sequential length="1G" size="64K"  synchronous="no" write="yes"/>
--->
 				<random     length="1G" size="16K"  seed="0xdeadbeef" synchronous="yes"/>
 				<random     length="8G" size="512K" seed="0xc0ffee"   synchronous="yes"/>
 				<ping_pong  length="1G" size="16K"/>}
 
-append config {
+append_if $test_write config {
+				<sequential length="256M" size="64K"  synchronous="no" write="yes"/>
 				<replay bulk="yes">
 					<request type="read" lba="0" count="1"/>
 					<request type="read" lba="0" count="1"/>
@@ -141,7 +144,8 @@ append config {
 					<request type="read" lba="122802" count="24"/>
 					<request type="read" lba="123594" count="64"/>
 					<request type="read" lba="123722" count="64"/>
-				</replay>
+				</replay>}
+append config {
 			</tests>
 		</config>
 		<route>
@@ -167,12 +171,8 @@ append_platform_drv_boot_modules
 build_boot_image $boot_modules
 
 append qemu_args " -nographic -m 512 "
-if {$use_vfio} {
-append qemu_args " -mem-prealloc -device vfio-pci,host=02:00.0 "
-} else {
 append qemu_args " -drive id=nvme0,file=bin/nvme.raw,format=raw,if=none "
 append qemu_args " -device nvme,drive=nvme0,serial=fnord,id=nvme0n1 "
-}
 
 run_genode_until {.*child "block_tester" exited with exit value 0.*\n} 300
 
