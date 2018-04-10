@@ -238,8 +238,7 @@ struct Genode::Root_directory : public Vfs::Simple_env,
 {
 	Root_directory(Genode::Env &env, Allocator &alloc, Xml_node config)
 	:
-		Vfs::Simple_env(env, alloc, config),
-		Directory((Vfs_trivial_env&)*this)
+		Vfs::Simple_env(env, alloc, config), Directory((Vfs::Simple_env&)*this)
 	{ }
 
 	void apply_config(Xml_node config) { root_dir().apply_config(config); }
