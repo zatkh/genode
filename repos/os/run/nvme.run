@@ -1,3 +1,5 @@
+assert_spec x86
+
 # perform write tests when requested
 if {[info exists env(GENODE_TEST_WRITE)]} {
 set test_write 1
@@ -5,14 +7,22 @@ set test_write 1
 set test_write 0
 }
 
-assert_spec x86
+set is_qemu         [have_include power_on/qemu]
+set is_old          [expr [have_spec fiasco] || [have_spec okl4] || [have_spec pistachio]]
+set is_32bit_x86_hw [expr !$is_qemu && [have_spec 32bit]]
 
-set is_qemu  [have_include power_on/qemu]
-
-if {[expr [have_spec linux] || [expr !$is_qemu && [have_spec 32bit]]]} {
+#
+# Only run tests on supported platforms
+#
+if {[expr [have_spec linux] || $is_32bit_x86_hw || [expr $is_qemu && $is_old]]} {
 	puts "This run script is not supported on this platform."
 	exit 0
 }
+
+#
+# Qemu and on certain platforms only use the small set of tests
+#
+set small_test [expr $is_qemu || [have_spec foc] || [have_spec sel4]]
 
 #
 # Check used commands
@@ -87,17 +97,17 @@ append config {
 		<config verbose="no" report="no" log="yes" stop_on_error="no">
 			<tests>}
 
-append_if $is_qemu config {
+append_if $small_test config {
 				<sequential length="256M" size="64K" synchronous="yes"/>
 				<random     length="256M" size="64K" seed="0xdeadbeef"/>}
 
-append_if [expr !$is_qemu] config {
+append_if [expr !$small_test] config {
 				<sequential length="1G" size="4K"   synchronous="no"/>
 				<sequential length="1G" size="8K"   synchronous="no"/>
 				<sequential length="1G" size="64K"  synchronous="yes"/>
-				<sequential length="16G" size="1M"  synchronous="no"/>
+				<sequential length="3G" size="1M"   synchronous="no"/>
 				<random     length="1G" size="16K"  seed="0xdeadbeef" synchronous="yes"/>
-				<random     length="8G" size="512K" seed="0xc0ffee"   synchronous="yes"/>
+				<random     length="3G" size="512K" seed="0xc0ffee"   synchronous="yes"/>
 				<ping_pong  length="1G" size="16K"/>}
 
 append_if $test_write config {
