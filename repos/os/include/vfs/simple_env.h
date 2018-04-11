@@ -41,18 +41,18 @@ class Vfs::Simple_env : public Vfs::Env
 
 	public:
 
-		Simple_env(Genode::Env &env,
+		Simple_env(Genode::Env       &env,
 		           Genode::Allocator &alloc,
-		            Genode::Xml_node config)
-		: _env(env), _alloc(alloc),
-		  _root_dir(*this, config, _fs_factory)
+		           Genode::Xml_node   config)
+		:
+			_env(env), _alloc(alloc), _root_dir(*this, config, _fs_factory)
 		{ }
 
-		Genode::Env &env()            override { return _env; }
-		Genode::Allocator &alloc()    override { return _alloc; }
-		Vfs::File_system &root_dir()  override { return _root_dir; }
+		Genode::Env       &env()       override { return _env; }
+		Genode::Allocator &alloc()     override { return _alloc; }
+		Vfs::File_system  &root_dir()  override { return _root_dir; }
 
-		Vfs::Io_response_handler &io_handler()       override { return    _io_dummy; }
+		Vfs::Io_response_handler    &io_handler()    override { return    _io_dummy; }
 		Vfs::Watch_response_handler &watch_handler() override { return _watch_dummy; }
 };
 

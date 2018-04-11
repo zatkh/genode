@@ -27,6 +27,7 @@
 #include <destruct_queue.h>
 #include <kill_broadcaster.h>
 #include <vfs/dir_file_system.h>
+#include <vfs/simple_env.h>
 
 namespace Noux {
 
@@ -96,7 +97,7 @@ static Noux::Io_channel &
 connect_stdio(Genode::Env                                 &env,
               Genode::Constructible<Terminal::Connection> &terminal,
               Genode::Xml_node                             config,
-              Vfs::Dir_file_system                        &root,
+              Vfs::File_system                            &root,
               Noux::Vfs_handle_context                    &vfs_handle_context,
               Noux::Vfs_io_waiter_registry                &vfs_io_waiter_registry,
               Noux::Terminal_io_channel::Type              type,
@@ -234,8 +235,9 @@ struct Noux::Main
 
 	} _io_response_handler;
 
-	Vfs::Dir_file_system _root_dir { _env, _heap, _config.xml().sub_node("fstab"),
-	                                 _io_response_handler, _global_file_system_factory };
+	Vfs::Simple_env _vfs_env { _env, _heap, _config.xml().sub_node("fstab") };
+
+	Vfs::File_system &_root_dir = _vfs_env.root_dir();
 
 	Vfs_handle_context _vfs_handle_context;
 
