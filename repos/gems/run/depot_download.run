@@ -1,5 +1,8 @@
 create_boot_directory
 
+# the test currently is tied to the x86-only iPXE NIC driver
+assert_spec x86
+
 import_from_depot genodelabs/src/[base_src] \
                   genodelabs/src/report_rom \
                   genodelabs/src/fs_rom \
