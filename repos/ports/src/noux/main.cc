@@ -235,7 +235,26 @@ struct Noux::Main
 
 	} _io_response_handler;
 
-	Vfs::Simple_env _vfs_env { _env, _heap, _config.xml().sub_node("fstab") };
+	struct Vfs_env : Vfs::Env
+	{
+		Main &_main;
+
+		Vfs::Global_file_system_factory _fs_factory { _main._heap };
+		Vfs::Dir_file_system            _root_dir;
+
+		Vfs_env(Main &main, Xml_node config)
+		: _main(main), _root_dir(*this, config, _fs_factory) { }
+
+		/**
+		 * Vfs::Env interface
+		 */
+		Genode::Env                 &env()           override { return _main._env; }
+		Allocator                   &alloc()         override { return _main._heap; }
+		Vfs::File_system            &root_dir()      override { return _root_dir; }
+		Vfs::Io_response_handler    &io_handler()    override { return _main._io_response_handler; }
+		Vfs::Watch_response_handler &watch_handler() override { }
+
+	} _vfs_env { *this, _config.xml().sub_node("fstab") };
 
 	Vfs::File_system &_root_dir = _vfs_env.root_dir();
 
