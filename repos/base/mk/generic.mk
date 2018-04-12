@@ -76,7 +76,7 @@ endif
 
 %.ali %.o: %.ads
 	$(MSG_COMP)$@
-	$(VERBOSE)$(CC) -c -gnatg -gnatp -gnatpg -gnatn2 -I- -I$(ADA_RTS_SOURCE) $<
+	$(VERBOSE)$(CC) -c -gnatg -gnatp -gnatpg -gnatn2 -I- -I$(ADA_RTS_SOURCE) $(CC_ADA_OPT) $<
 
 #
 # Compiling Rust sources
